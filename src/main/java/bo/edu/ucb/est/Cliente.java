@@ -1,4 +1,4 @@
-package bo.edu.ucb.est.modelo;
+package bo.edu.ucb.est;
 
 import java.util.HashMap;
 import java.util.ArrayList;

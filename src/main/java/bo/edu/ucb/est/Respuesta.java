@@ -1,8 +1,5 @@
 package bo.edu.ucb.est;
 
-import bo.edu.ucb.est.modelo.Cliente;
-import bo.edu.ucb.est.modelo.Cuenta;
-
 import java.util.ArrayList;
 
 public class Respuesta {
