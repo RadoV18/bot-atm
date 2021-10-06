@@ -1,5 +1,8 @@
 package bo.edu.ucb.est;
 
+import bo.edu.ucb.est.modelo.Cliente;
+import bo.edu.ucb.est.modelo.Cuenta;
+
 enum Estado {inicioBot, registro, inicioSesion, regresarMenu, menuInicio, seleccionCuenta,
              deposito, retiro, seleccionTipoCuenta, salir}
 enum Accion {registrar, iniciarSesion, ingresarOpcion, verSaldo, retirar, depositar, crearCuenta, salir}
