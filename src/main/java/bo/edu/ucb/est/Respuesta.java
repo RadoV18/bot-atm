@@ -10,7 +10,6 @@ public class Respuesta {
     }
 
     public void agregarMensajes(String... texto) {
-        System.out.println("agregarMensajes");
         for(String t : texto) {
             mensajes.add(t);
         }
@@ -33,13 +32,9 @@ public class Respuesta {
                                  "He notado que aún no eres cliente, procedamos a registrarte.",
                                  "¿Cuál es tu nombre completo?");
                 } else if(accion == Accion.iniciarSesion) {
-                    agregarMensajes("Hola de nuevo " + cl.getNombre(),
-                    "Solo por seguridad ¿cuál es tu PIN?");
+                    agregarMensajes("Hola de nuevo " + cl.getNombre() + ".",
+                    "Solo por seguridad, ¿Cuál es tu PIN?");
                 }
-                break;
-
-            case inicioSesion:
-                agregarMensajes("asdf");
                 break;
             
             case registro:
@@ -54,11 +49,11 @@ public class Respuesta {
             
             case menuInicio:
                 agregarMensajes("Elige una opción:\n\n" +
-                                "1. Ver Saldo\n" +
-                                "2. Retirar dinero\n" +
-                                "3. Depositar dinero\n" +
-                                "4. Crear cuenta\n" +
-                                "5. Salir");
+                                "1. Ver Saldo.\n" +
+                                "2. Retirar dinero.\n" +
+                                "3. Depositar dinero.\n" +
+                                "4. Crear cuenta.\n" +
+                                "5. Salir.");
                 break;
 
             case regresarMenu:
@@ -69,8 +64,7 @@ public class Respuesta {
                 } else if (accion == Accion.verSaldo) {
                     Cuenta cu = cl.getCuentaActiva();
                     agregarMensajes(cu.mostrarSaldo());
-                }
-                if(valor != ValorAIngresar.montoRetiro && valor != ValorAIngresar.montoDeposito) {
+                } else if(valor != ValorAIngresar.montoRetiro && valor != ValorAIngresar.montoDeposito) {
                     generarMensajes(Estado.menuInicio, accion, valor, cl);
                 }
                 break;
@@ -85,8 +79,8 @@ public class Respuesta {
 
             case seleccionTipoCuenta:
                 agregarMensajes("Seleccione la moneda:\n" +
-                                "1. Bolivianos\n" + 
-                                "2. Dólares");
+                                "1. Bolivianos.\n" + 
+                                "2. Dólares.");
                 break;
             
             case retiro:

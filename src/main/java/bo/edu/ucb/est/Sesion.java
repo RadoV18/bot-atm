@@ -184,118 +184,110 @@ public class Sesion {
         System.out.println("Estado inicial: " + estado);
         System.out.println("Accion inicial: " + accion);
         System.out.println("Valor inicial: " + valor);
-        try {
-            switch(estado) {
-                // /iniciaratm
-                case inicioBot:
-                    //Verificar si el cliente esta registrado o no
-                    if(cliente.getNombre().equals("")) {
-                        // Cliente nuevo
-                        estado = Estado.registro;
-                        accion = Accion.registrar;
-                        valor = ValorAIngresar.nombre;
-                    } else {
-                        // Cliente registrado
-                        estado = Estado.inicioBot;
-                        accion = Accion.iniciarSesion;
-                        valor = ValorAIngresar.pin;
-                    }
-                    break;
-                
-                case registro:
-                    switch(valor) {
-                        case nombre:
-                        valor = ValorAIngresar.pinNuevo;
+        switch(estado) {
+            // /iniciaratm
+            case inicioBot:
+                //Verificar si el cliente esta registrado o no
+                if(cliente.getNombre().equals("")) {
+                    // Cliente nuevo
+                    estado = Estado.registro;
+                    accion = Accion.registrar;
+                    valor = ValorAIngresar.nombre;
+                } else {
+                    // Cliente registrado
+                    estado = Estado.inicioBot;
+                    accion = Accion.iniciarSesion;
+                    valor = ValorAIngresar.pin;
+                }
+                break;
+            
+            case registro:
+                if(valor == ValorAIngresar.nombre) {
+                    valor = ValorAIngresar.pinNuevo;
+                } else if(valor == ValorAIngresar.pinNuevo) {
+                    estado = Estado.inicioBot;
+                    accion = Accion.iniciarSesion;
+                    valor = ValorAIngresar.pin;
+                }
+                break;
+
+            case inicioSesion:
+                setMenuInicio();
+                break;
+            
+            case menuInicio:
+                //menu de opciones
+                switch(Integer.valueOf(mensajeRecibido)) {
+                    case 1: // ver saldo
+                        estado = Estado.seleccionCuenta;
+                        accion = Accion.verSaldo;
+                        valor = ValorAIngresar.opcionCuenta;
                         break;
-
-                        case pinNuevo:
-                        estado = Estado.inicioBot;
-                        accion = Accion.iniciarSesion;
-                        valor = ValorAIngresar.pin;
+                    
+                    case 2: // retirar
+                        estado = Estado.seleccionCuenta;
+                        accion = Accion.retirar;
+                        valor = ValorAIngresar.opcionCuenta;
                         break;
-                    }
-                    break;
-
-                case inicioSesion:
-                    setMenuInicio();
-                    break;
-                
-                case menuInicio:
-                    //menu de opciones
-                    switch(Integer.valueOf(mensajeRecibido)) {
-                        case 1: // ver saldo
-                            estado = Estado.seleccionCuenta;
-                            accion = Accion.verSaldo;
-                            valor = ValorAIngresar.opcionCuenta;
-                            break;
-                        
-                        case 2: // retirar
-                            estado = Estado.seleccionCuenta;
-                            accion = Accion.retirar;
-                            valor = ValorAIngresar.opcionCuenta;
-                            break;
-                        
-                        case 3: // depositar
-                            estado = Estado.seleccionCuenta;
-                            accion = Accion.depositar;
-                            valor = ValorAIngresar.opcionCuenta;
-                            break;
-                        
-                        case 4: // crear cuenta
-                            estado = Estado.seleccionTipoCuenta;
-                            accion = Accion.crearCuenta;
-                            valor = ValorAIngresar.opcion;
-                            break;
-                        
-                        case 5: // salir
-                            estado = Estado.salir;
-                            accion = Accion.salir;
-                            valor = null;
-                            break;
-                    }
-                    break;
-
-                case seleccionCuenta:
-                    if(accion == Accion.verSaldo) {
-                        estado = Estado.regresarMenu;
+                    
+                    case 3: // depositar
+                        estado = Estado.seleccionCuenta;
+                        accion = Accion.depositar;
+                        valor = ValorAIngresar.opcionCuenta;
+                        break;
+                    
+                    case 4: // crear cuenta
+                        estado = Estado.seleccionTipoCuenta;
+                        accion = Accion.crearCuenta;
                         valor = ValorAIngresar.opcion;
-                    }
-                    break;
-                
+                        break;
+                    
+                    case 5: // salir
+                        estado = Estado.salir;
+                        accion = Accion.salir;
+                        valor = null;
+                        break;
+                }
+                break;
 
-                case deposito:
-                    if(valor == ValorAIngresar.montoDeposito) {
-                        setMenuInicio();
-                    } else {
-                        valor = ValorAIngresar.montoDeposito;
-                    }
-                    break;
-
-                case retiro:
-                    if(valor == ValorAIngresar.montoRetiro) {
-                        setMenuInicio();
-                    } else {
-                        valor = ValorAIngresar.montoRetiro;
-                    }
-                    break;
-
-                case seleccionTipoCuenta:
+            case seleccionCuenta:
+                if(accion == Accion.verSaldo) {
                     estado = Estado.regresarMenu;
-                    break;
+                    valor = ValorAIngresar.opcion;
+                }
+                break;
+            
 
-                case regresarMenu:
+            case deposito:
+                if(valor == ValorAIngresar.montoDeposito) {
                     setMenuInicio();
-                    break;
-                
-                case salir:
-                    estado = Estado.salir;
-                    accion = Accion.salir;
-                    valor = null;
-                    break;
+                } else {
+                    valor = ValorAIngresar.montoDeposito;
+                }
+                break;
 
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+            case retiro:
+                if(valor == ValorAIngresar.montoRetiro) {
+                    setMenuInicio();
+                } else {
+                    valor = ValorAIngresar.montoRetiro;
+                }
+                break;
+
+            case seleccionTipoCuenta:
+                estado = Estado.regresarMenu;
+                break;
+
+            case regresarMenu:
+                setMenuInicio();
+                break;
+            
+            case salir:
+                estado = Estado.salir;
+                accion = Accion.salir;
+                valor = null;
+                break;
+
         }
         System.out.println("|||||||||||||||||||||");
         System.out.println("Estado final: " + estado);
