@@ -26,14 +26,17 @@ public class Cuenta {
 
     public void depositar(int monto) throws Exception {
         if(monto <= 0) {
-            throw new Exception("Monto inválido");
+            throw new Exception("Monto inválido.");
         }
         saldo += monto;
     }
 
     public void retirar(int monto) throws Exception {
+        if(monto <= 0) {
+            throw new Exception("Monto inválido.");
+        }
         if(monto > saldo) {
-            throw new Exception("Saldo insuficiente");
+            throw new Exception("Saldo insuficiente.");
         }
         saldo -= monto;
     }

@@ -58,10 +58,14 @@ public class Cliente {
     public void validarPin(String pinSeguridad) throws Exception{
         // Verificar que el pin solo tenga 4 digitos
         if(pinSeguridad.length() != 4) {
-            throw new Exception();
+            throw new Exception("El PIN debe contener 4 dígitos.");
         }
         // Verificar que el pin solo tenga numeros
-        Integer.parseInt(pinSeguridad);
+        try {
+            Integer.parseInt(pinSeguridad);
+        } catch (Exception e) {
+            throw new Exception("El PIN debe contener números.");
+        }
     }
 
     public boolean validarIngreso(String pinSeguridad) throws Exception{
@@ -101,8 +105,14 @@ public class Cliente {
     }
 
     public Cuenta getCuentaSeleccionada(int pos) throws Exception{
-        ArrayList<Integer> numerosCuenta = new ArrayList<Integer>(cuentas.keySet());
-        return cuentas.get((numerosCuenta.get(pos - 1)));
+        Cuenta cuentaSeleccionada = null;
+        try {
+            ArrayList<Integer> numerosCuenta = new ArrayList<Integer>(cuentas.keySet());
+            cuentaSeleccionada = cuentas.get((numerosCuenta.get(pos - 1)));
+        } catch (Exception e) {
+            throw new Exception("Opción inválida.");
+        }
+        return cuentaSeleccionada;
     }
 
 }

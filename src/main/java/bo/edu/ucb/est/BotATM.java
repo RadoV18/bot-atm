@@ -19,49 +19,47 @@ public class BotATM extends TelegramLongPollingBot{
     public void onUpdateReceived(Update update) {
         Long chatID = update.getMessage().getChatId();
         System.out.println("Mensaje de: " + chatID + " " + update.getMessage().getFrom().getFirstName() + " -> " + update.getMessage().getText());
-
+        Sesion usuarioActual = null;
         //Comando para iniciar el bot
         if(update.getMessage().getText().equals("/iniciaratm")) {
             Cliente cl = banco.buscarClientePorChatID(chatID);
-            Sesion s = null;
             if(cl == null) {
                 // Registrar cliente
-                s = new Sesion(chatID.toString());
-                banco.agregarCliente(s.getCliente());
+                usuarioActual = new Sesion(chatID.toString());
+                banco.agregarCliente(usuarioActual.getCliente());
             } else {
                 // Crear sesion
-                s = new Sesion(cl);
+                usuarioActual = new Sesion(cl);
             }
-            usuarios.put(chatID, s);
-        }
-
-        
-        System.out.println("Generar respuesta");
-        System.out.println(usuarios.get(chatID).toString());
-        System.out.println("Estado: " + usuarios.get(chatID).getEstado());
-        boolean resultado = usuarios.get(chatID).registrarMensaje(update.getMessage().getText());
-        Respuesta res = null;
-        if(resultado) {
-            System.out.println("true");
-            if(usuarios.get(chatID).getEstado() == Estado.menuInicio) {
-                // para el menu de opciones
-                usuarios.get(chatID).controlarFlujo();
-                res = usuarios.get(chatID).generarRespuesta();
-            } else {
-                res = usuarios.get(chatID).generarRespuesta();
-                usuarios.get(chatID).controlarFlujo();
-            }
+            usuarios.put(chatID, usuarioActual);
         } else {
-            System.out.println("false");
-            res = usuarios.get(chatID).generarRespuestaError();
+            usuarioActual = usuarios.get(chatID);
         }
-        
-        enviarMensajes(res, chatID);
-        usuarios.get(chatID).setRespuesta(new Respuesta());
-        
-        //Eliminar el cliente del mapa de sesiones si elige la opcion salir
-        if(usuarios.get(chatID).getEstado() == Estado.salir) {
-            usuarios.remove(chatID);
+        if(usuarioActual != null) {
+            Respuesta res = null;
+            try {
+                usuarioActual.registrarMensaje(update.getMessage().getText());
+                if(usuarioActual.getEstado() == Estado.menuInicio) {
+                    // para el menu de opciones
+                    usuarioActual.controlarFlujo();
+                    res = usuarioActual.generarRespuesta();
+                } else {
+                    res = usuarioActual.generarRespuesta();
+                    usuarioActual.controlarFlujo();
+                }
+            } catch (Exception e) {
+                System.out.println(e.getMessage() + " excepcion botATM");
+                System.out.println(usuarioActual.getEstado());
+                res = usuarioActual.generarRespuestaError(e.getMessage());
+            }
+            
+            enviarMensajes(res, chatID);
+            usuarioActual.setRespuesta(new Respuesta());
+            
+            //Eliminar el cliente del mapa de sesiones si elige la opcion salir
+            if(usuarioActual.getEstado() == Estado.salir) {
+                usuarios.remove(chatID);
+            }
         }
     }
 

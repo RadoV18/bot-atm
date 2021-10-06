@@ -51,8 +51,8 @@ public class Sesion {
         return respuesta;
     }
 
-    public Respuesta generarRespuestaError() {
-        respuesta.generarMensajesError(estado, accion, valor, cliente);
+    public Respuesta generarRespuestaError(String mensajeError) {
+        respuesta.generarMensajesError(mensajeError, estado, accion, valor, cliente);
         return respuesta;
     }
 
@@ -70,70 +70,69 @@ public class Sesion {
         valor = ValorAIngresar.opcion;
     }
 
-    public boolean registrarMensaje(String msg) {
+    public void registrarMensaje(String msg) throws Exception {
         mensajeRecibido = msg;
-        boolean resultado = true;
-        if(estado == Estado.registro) {
-            if(valor == ValorAIngresar.nombre) {
-                System.out.println("Set nombre " + mensajeRecibido);
-                cliente.setNombre(mensajeRecibido);
-            } else {
-                System.out.println("Set pin " + mensajeRecibido);
-                try {
+        switch(estado) {
+            case registro:
+                if(valor == ValorAIngresar.nombre) {
+                    System.out.println("Set nombre " + mensajeRecibido);
+                    cliente.setNombre(mensajeRecibido);
+                } else {
+                    System.out.println("Set pin " + mensajeRecibido);
                     cliente.setPinSeguridad(mensajeRecibido);
-                } catch (Exception e) {
-                    resultado = false;
                 }
-            }
-        } else if(estado == Estado.inicioBot) {
-            try {
+                break;
+            
+            case inicioBot:
                 if(accion == Accion.iniciarSesion && !mensajeRecibido.equals("/iniciaratm")) {
                     if(!cliente.validarIngreso(mensajeRecibido)) {
-                        resultado = false;
                         System.out.println(mensajeRecibido + "!=" + cliente.getPinSeguridad());
+                        throw new Exception("PIN incorrecto.");
                     } else {
                         respuesta.agregarMensajes("Bienvenido.");
                         setMenuInicio();
                     }
                 }
-            } catch (Exception e) {
-                resultado = false;
-            }
-        } else if(estado == Estado.menuInicio) {
-            int opc = -1;
-            try {
-                opc = Integer.parseInt(mensajeRecibido);
-            } catch (Exception e) {
-                resultado = false;
-            }
-            if(opc <= 0 || opc > 5) {
-                resultado = false;
-                System.out.println("Opcion invalida");
-            }
-            switch(opc) {
-                case 1:
-                case 2:
-                case 3:
-                    if(cliente.getCuentas().isEmpty()) {
-                        System.out.println("sin cuentas");
-                        resultado = false;
+                break;
+            
+            case menuInicio:
+                int opcionMenu = -1;
+                try {
+                    opcionMenu = Integer.parseInt(mensajeRecibido);
+                    if(opcionMenu <= 0 || opcionMenu > 5) {
+                        throw new Exception();
                     }
-                    break;
-                
-                case 5:
-                    estado = Estado.salir;
-                    accion = Accion.salir;
-                    valor = null;
-                    break;   
-            }
-        } else if(estado == Estado.seleccionTipoCuenta) {
-            int opc = -1;
-            try {
-                opc = Integer.parseInt(mensajeRecibido);
-                if(opc < 1 || opc > 2) {
-                    throw new Exception();
+                } catch (Exception e) {
+                    throw new Exception("Opción inválida.");
                 }
-                if(opc == 1) {
+                switch(opcionMenu) {
+                    case 1:
+                    case 2:
+                    case 3:
+                        if(cliente.getCuentas().isEmpty()) {
+                            throw new Exception("Usted no tiene cuentas. Cree una primero.");
+                        }
+                        break;
+                    
+                    case 5:
+                        estado = Estado.salir;
+                        accion = Accion.salir;
+                        valor = null;
+                        break;   
+                }
+                break;
+
+            case seleccionTipoCuenta:
+                int opcionCuenta = -1;
+                try {
+                    opcionCuenta = Integer.parseInt(mensajeRecibido);
+                    if(opcionCuenta < 1 || opcionCuenta > 2) {
+                        throw new Exception();
+                    }
+                } catch (Exception e) {
+                    throw new Exception("Opción inválida.");
+                }
+                if(opcionCuenta == 1) {
                     cliente.agregarCuenta(new Cuenta("Bolivianos", nroCuentaDisponible));
                 } else {
                     cliente.agregarCuenta(new Cuenta("Dólares", nroCuentaDisponible));
@@ -141,49 +140,62 @@ public class Sesion {
                 System.out.println("Cuenta agregada " + nroCuentaDisponible);
                 estado = Estado.regresarMenu;
                 nroCuentaDisponible++;
-            } catch (Exception e) {
-                resultado = false;
-            }
-        } else if(estado == Estado.seleccionCuenta) {
-            try {
-                int opcion = Integer.parseInt(mensajeRecibido);
+                break;
+            
+            case seleccionCuenta:
+                int opcion;
+                try {
+                    opcion = Integer.parseInt(mensajeRecibido);
+                } catch (Exception e) {
+                    throw new Exception("Opción inválida.");
+                }
                 cuentaActual = cliente.getCuentaSeleccionada(opcion);
                 cliente.setCuentaActiva(cuentaActual);
                 if(accion == Accion.verSaldo) {
                     estado = Estado.regresarMenu;
                 } else if(accion == Accion.retirar) {
+                    if(cuentaActual.getSaldo() == 0) {
+                        estado = Estado.menuInicio;
+                        valor = ValorAIngresar.opcion;
+                        throw new Exception("Error. El saldo de la cuenta seleccionada es 0.");
+                    }
                     estado = Estado.retiro;
                 } else if(accion == Accion.depositar) {
                     estado = Estado.deposito;
                 }
                 System.out.println("Cuenta seleccionada: " + cuentaActual);
-            } catch (Exception e) {
-                cuentaActual = null;
-                resultado = false;
-            }
-        } else if(estado == Estado.retiro && valor == ValorAIngresar.montoRetiro) {
-            try {
-                int monto = Integer.parseInt(mensajeRecibido);
-                cliente.getCuentaActiva().retirar(monto);
-            } catch (Exception e) {
-                resultado = false;    
-            }
-        } else if(estado == Estado.deposito && valor == ValorAIngresar.montoDeposito) {
-            try {
-                int monto = Integer.parseInt(mensajeRecibido);
-                cliente.getCuentaActiva().depositar(monto);
-            } catch (Exception e) {
-                resultado = false;
-            }
+                break;
+
+            case retiro:
+                if(valor == ValorAIngresar.montoRetiro) {
+                    int monto;
+                    try {
+                        monto = Integer.parseInt(mensajeRecibido);
+                    } catch (Exception e) {
+                        throw new Exception("Monto inválido.");
+                    }
+                    cliente.getCuentaActiva().retirar(monto);
+                }
+                break;
+            
+            case deposito:
+                if(valor == ValorAIngresar.montoDeposito) {
+                    int monto;
+                    try {
+                        monto = Integer.parseInt(mensajeRecibido);
+                    } catch (Exception e) {
+                        throw new Exception("Monto inválido.");
+                    }
+                    cliente.getCuentaActiva().depositar(monto);
+                }
+                break;
+
         }
-        return resultado;
     }
 
     public void controlarFlujo() {
         System.out.println("******************");
-        System.out.println("Estado inicial: " + estado);
-        System.out.println("Accion inicial: " + accion);
-        System.out.println("Valor inicial: " + valor);
+        System.out.print(estado + " " + accion + " " + valor + " -> ");
         switch(estado) {
             // /iniciaratm
             case inicioBot:
@@ -289,10 +301,7 @@ public class Sesion {
                 break;
 
         }
-        System.out.println("|||||||||||||||||||||");
-        System.out.println("Estado final: " + estado);
-        System.out.println("Accion final: " + accion);
-        System.out.println("Valor final: " + valor);
-        System.out.println("******************");
+        System.out.println(estado + " " + accion + " " + valor);
+        System.out.println("******************\n");
     }
 }

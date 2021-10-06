@@ -24,7 +24,6 @@ public class Respuesta {
     }
 
     public void generarMensajes(Estado estado, Accion accion, ValorAIngresar valor, Cliente cl) {
-        System.out.println("Generar para " + estado + " " + accion + " " + valor);
         switch(estado) {
             case inicioBot:
                 if(accion == Accion.registrar) {
@@ -64,7 +63,9 @@ public class Respuesta {
                 } else if (accion == Accion.verSaldo) {
                     Cuenta cu = cl.getCuentaActiva();
                     agregarMensajes(cu.mostrarSaldo());
-                } else if(valor != ValorAIngresar.montoRetiro && valor != ValorAIngresar.montoDeposito) {
+                }
+                // Generar mensajes del menu de inicio
+                if(valor != ValorAIngresar.montoRetiro && valor != ValorAIngresar.montoDeposito) {
                     generarMensajes(Estado.menuInicio, accion, valor, cl);
                 }
                 break;
@@ -109,16 +110,20 @@ public class Respuesta {
         }
     }
 
-    public void generarMensajesError(Estado estado, Accion accion, ValorAIngresar valor, Cliente cl) {
+    public void generarMensajesError(String mensajeError, Estado estado, Accion accion, ValorAIngresar valor, Cliente cl) {
+        agregarMensajes(mensajeError);
         if(valor == ValorAIngresar.pinNuevo) {
-            agregarMensajes("Ingrese un PIN válido.");
             generarMensajes(Estado.registro, accion, ValorAIngresar.nombre, cl);
         } else if(valor == ValorAIngresar.pin) {
-            agregarMensajes("PIN inválido/incorrecto.");
             generarMensajes(Estado.inicioBot, accion, valor, cl);
         } else if(estado == Estado.menuInicio) {
-            agregarMensajes("Usted no tiene cuentas. Cree una primero.");
-            generarMensajes(Estado.menuInicio, Accion.ingresarOpcion, ValorAIngresar.opcion, cl);
+            generarMensajes(estado, Accion.ingresarOpcion, ValorAIngresar.opcion, cl);
+        } else if(estado == Estado.seleccionTipoCuenta) {
+            generarMensajes(estado, accion, valor, cl);
+        } else if(estado == Estado.seleccionCuenta) {
+            generarMensajes(estado, accion, valor, cl);
+        } else if(estado == Estado.retiro || estado == Estado.deposito) {
+            generarMensajes(estado, accion, ValorAIngresar.opcionCuenta, cl);
         }
     }
 }
